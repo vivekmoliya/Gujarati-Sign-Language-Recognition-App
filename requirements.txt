@@ -1,6 +1,7 @@
 flask
-opencv-python
 numpy
+opencv-python
+Pillow
 joblib
-pillow
 gdown
+scikit-learn
