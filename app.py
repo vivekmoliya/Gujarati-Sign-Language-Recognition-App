@@ -15,7 +15,12 @@ UPLOAD_FOLDER = './static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Load the trained SVM model
-model = joblib.load('model.pkl')
+# model = joblib.load('model.pkl')
+model = None
+try:
+    model = joblib.load('model.pkl')
+except Exception as e:
+    print("⚠️ Model not loaded:", e)
 # model = joblib.load('svm_model (4).pkl')
 
 
@@ -50,6 +55,9 @@ def camera():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    if model is None:
+        return "Model not found. Cannot predict.", 500
+
     # Handle camera image
     image_data = request.form.get('image_data')
     if image_data:
