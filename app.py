@@ -16,65 +16,56 @@ app = Flask(__name__)
 UPLOAD_FOLDER = './static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Load the trained SVM model
-# model = joblib.load('model.pkl')
+# Model path
 MODEL_PATH = "model.pkl"
+
+# Download model if not already present
 if not os.path.exists(MODEL_PATH):
     print("Downloading model...")
     url = "https://drive.google.com/uc?export=download&id=1ja640I0nxK9gilwNytH7EL3bx3dJakQb"
     gdown.download(url, MODEL_PATH, quiet=False)
     print("Model downloaded!")
 
-# model = joblib.load(MODEL_PATH)
-# model = joblib.load('svm_model (4).pkl')
-# Now load the model
+# Load the model once globally
+try:
+    model = joblib.load(MODEL_PATH)
+    print("Model loaded successfully!")
+except Exception as e:
+    print("Error loading model:", e)
+    model = None
 
-# Gujarati classes
 # Gujarati classes
 classes = {
-    0: 'ક',   1: 'ખ',   2: 'ગ',   3: 'ઘ',   4: 'ચ',   5: 'છ',
-    6: 'જ',   7: 'ઝ',   8: 'ટ',   9: 'ઠ',   10: 'ડ',   11: 'ઢ',
-    12: 'ણ',   13: 'ત',   14: 'થ',   15: 'દ',   16: 'ધ',   17: 'ન',
-    18: 'પ',   19: 'ફ',   20: 'બ',   21: 'ભ',   22: 'મ',   23: 'ય',
-    24: 'ર',   25: 'લ',   26: 'વ',   27: 'શ',   28: 'ષ',   29: 'સ',
-    30: 'હ',   31: 'ળ',   32: 'ક્ષ', 33:'જ્ઞ'
+    0: 'ક', 1: 'ખ', 2: 'ગ', 3: 'ઘ', 4: 'ચ', 5: 'છ',
+    6: 'જ', 7: 'ઝ', 8: 'ટ', 9: 'ઠ', 10: 'ડ', 11: 'ઢ',
+    12: 'ણ', 13: 'ત', 14: 'થ', 15: 'દ', 16: 'ધ', 17: 'ન',
+    18: 'પ', 19: 'ફ', 20: 'બ', 21: 'ભ', 22: 'મ', 23: 'ય',
+    24: 'ર', 25: 'લ', 26: 'વ', 27: 'શ', 28: 'ષ', 29: 'સ',
+    30: 'હ', 31: 'ળ', 32: 'ક્ષ', 33: 'જ્ઞ'
 }
 
-
 def preprocess_image(image_path):
-    """Preprocess the uploaded image to match the model's input format."""
-    img = cv2.imread(image_path, 0)  # Read in grayscale
-    img = cv2.resize(img, (200, 200))  # Resize to 200x200
-    img = img.flatten() / 255.0  # Flatten and normalize
+    img = cv2.imread(image_path, 0)  # Grayscale
+    img = cv2.resize(img, (200, 200))
+    img = img.flatten() / 255.0
     return np.array([img])
-
-def load_model():
-    try:
-        return joblib.load(MODEL_PATH)
-    except Exception as e:
-        print("Error loading model:", e)
-        return None
 
 @app.route('/')
 def index():
-    return render_template('index.html')  # Main page for uploading files
+    return render_template('index.html')
 
 @app.route('/camera')
 def camera():
-    return render_template('camera.html')  # Camera page
+    return render_template('camera.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        print(">>> Starting prediction")
-
-        model = load_model()
         if model is None:
-            return "Model not found. Cannot predict.", 500
+            return "Model not loaded. Cannot predict.", 500
 
         image_data = request.form.get('image_data')
         if image_data:
-            print(">>> Handling camera image")
             image_data = image_data.split(',')[1]
             image_bytes = base64.b64decode(image_data)
             image = Image.open(BytesIO(image_bytes)).convert('L').resize((200, 200))
@@ -82,31 +73,26 @@ def predict():
             input_data = np.array([input_data])
 
             prediction = model.predict(input_data)
-            print(">>> Prediction:", prediction)
-
-            predicted_label = classes.get(prediction[0], "Unknown Prediction")
+            predicted_label = classes.get(prediction[0], "Unknown")
             image_base64 = base64.b64encode(image_bytes).decode('utf-8')
 
             return render_template('result.html', prediction=predicted_label, captured_image=image_base64)
 
         if 'file' in request.files:
-            print(">>> Handling file upload")
             file = request.files['file']
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
 
             input_data = preprocess_image(filepath)
             prediction = model.predict(input_data)
-            print(">>> Prediction:", prediction)
+            predicted_label = classes.get(prediction[0], "Unknown")
 
-            predicted_label = classes.get(prediction[0], "Unknown Prediction")
             return render_template('result.html', prediction=predicted_label, image_path=filepath)
 
-        print(">>> No image provided")
         return redirect(request.url)
 
     except Exception as e:
-        print(">>> ERROR in /predict route:", e)
+        print("Error during prediction:", e)
         return f"Internal Server Error: {e}", 500
 
 if __name__ == '__main__':
