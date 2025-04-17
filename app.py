@@ -6,6 +6,7 @@ import os
 from PIL import Image
 import base64
 from io import BytesIO
+import urllib.request
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -16,13 +17,15 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Load the trained SVM model
 # model = joblib.load('model.pkl')
-model = None
-try:
-    model = joblib.load('model.pkl')
-except Exception as e:
-    print("⚠️ Model not loaded:", e)
+MODEL_PATH = "model.pkl"
+if not os.path.exists(MODEL_PATH):
+    print("Downloading model...")
+    url = "https://drive.google.com/uc?export=download&id=1ja640I0nxK9gilwNytH7EL3bx3dJakQb"
+    urllib.request.urlretrieve(url, MODEL_PATH)
+    print("Model downloaded!")
 # model = joblib.load('svm_model (4).pkl')
-
+# Now load the model
+model = joblib.load(MODEL_PATH)
 
 # Gujarati classes
 # Gujarati classes
