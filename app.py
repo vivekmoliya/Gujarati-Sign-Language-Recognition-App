@@ -65,59 +65,49 @@ def camera():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Lazy load the model inside the route
-    model = load_model()
-    
-    if model is None:
-        return "Model not found. Cannot predict.", 500
+    try:
+        print(">>> Starting prediction")
 
-    # Handle camera image
-    image_data = request.form.get('image_data')
-    if image_data:
-        # Decode the base64 image
-        image_data = image_data.split(',')[1]  # Remove the data URL prefix
-        image_bytes = base64.b64decode(image_data)
-        
-        # Convert the image to a format that can be displayed as an image source
-        image_base64 = base64.b64encode(image_bytes).decode('utf-8')
+        model = load_model()
+        if model is None:
+            return "Model not found. Cannot predict.", 500
 
-        # Predict using the model
-        image = Image.open(BytesIO(image_bytes))
-        image = image.convert('L')  # Convert to grayscale
-        image = image.resize((200, 200))  # Resize to match model input
-        input_data = np.array(image).flatten() / 255.0
-        input_data = np.array([input_data])
+        image_data = request.form.get('image_data')
+        if image_data:
+            print(">>> Handling camera image")
+            image_data = image_data.split(',')[1]
+            image_bytes = base64.b64decode(image_data)
+            image = Image.open(BytesIO(image_bytes)).convert('L').resize((200, 200))
+            input_data = np.array(image).flatten() / 255.0
+            input_data = np.array([input_data])
 
-        # Predict using the model
-        prediction = model.predict(input_data)
-        print("Prediction:", prediction)  # Debugging print statement
-        
-        # Check if the prediction is in the range of classes
-        if prediction[0] in classes:
-            predicted_label = classes[prediction[0]]
-        else:
-            predicted_label = "Unknown Prediction"
+            prediction = model.predict(input_data)
+            print(">>> Prediction:", prediction)
 
-        return render_template('result.html', prediction=predicted_label, captured_image=image_base64)
+            predicted_label = classes.get(prediction[0], "Unknown Prediction")
+            image_base64 = base64.b64encode(image_bytes).decode('utf-8')
 
-    # Handle uploaded image from the main page
-    if 'file' in request.files:
-        file = request.files['file']
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filepath)
-        input_data = preprocess_image(filepath)
-        prediction = model.predict(input_data)
-        print("Prediction:", prediction)  # Debugging print statement
-        
-        # Check if the prediction is in the range of classes
-        if prediction[0] in classes:
-            predicted_label = classes[prediction[0]]
-        else:
-            predicted_label = "Unknown Prediction"
+            return render_template('result.html', prediction=predicted_label, captured_image=image_base64)
 
-        return render_template('result.html', image_path=filepath, prediction=predicted_label)
+        if 'file' in request.files:
+            print(">>> Handling file upload")
+            file = request.files['file']
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file.save(filepath)
 
-    return redirect(request.url)
+            input_data = preprocess_image(filepath)
+            prediction = model.predict(input_data)
+            print(">>> Prediction:", prediction)
+
+            predicted_label = classes.get(prediction[0], "Unknown Prediction")
+            return render_template('result.html', prediction=predicted_label, image_path=filepath)
+
+        print(">>> No image provided")
+        return redirect(request.url)
+
+    except Exception as e:
+        print(">>> ERROR in /predict route:", e)
+        return f"Internal Server Error: {e}", 500
 
 if __name__ == '__main__':
     import os
