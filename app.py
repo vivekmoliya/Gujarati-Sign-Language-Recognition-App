@@ -17,12 +17,12 @@ UPLOAD_FOLDER = './static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Model path
-MODEL_PATH = "model.pkl"
+MODEL_PATH = "svm_model.pkl"
 
 # Download model if not already present
 if not os.path.exists(MODEL_PATH):
     print("Downloading model...")
-    url = "https://drive.google.com/uc?export=download&id=1ja640I0nxK9gilwNytH7EL3bx3dJakQb"
+    url = "https://drive.google.com/uc?export=download&id=1CPEZxfe9DwlPwTXiQerTOqtG17LfNiXz"
     gdown.download(url, MODEL_PATH, quiet=False)
     print("Model downloaded!")
 
