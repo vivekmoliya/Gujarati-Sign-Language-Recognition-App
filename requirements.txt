@@ -5,3 +5,5 @@ Pillow
 joblib
 gdown
 scikit-learn
+gunicorn
+
