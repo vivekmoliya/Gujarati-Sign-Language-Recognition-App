@@ -7,6 +7,7 @@ from PIL import Image
 import base64
 from io import BytesIO
 import urllib.request
+import gdown
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -21,11 +22,12 @@ MODEL_PATH = "model.pkl"
 if not os.path.exists(MODEL_PATH):
     print("Downloading model...")
     url = "https://drive.google.com/uc?export=download&id=1ja640I0nxK9gilwNytH7EL3bx3dJakQb"
-    urllib.request.urlretrieve(url, MODEL_PATH)
+    gdown.download(url, MODEL_PATH, quiet=False)
     print("Model downloaded!")
+
+model = joblib.load(MODEL_PATH)
 # model = joblib.load('svm_model (4).pkl')
 # Now load the model
-model = joblib.load(MODEL_PATH)
 
 # Gujarati classes
 # Gujarati classes
