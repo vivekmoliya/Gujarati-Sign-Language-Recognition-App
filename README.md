@@ -1,4 +1,4 @@
-# 🤟 Gujarati Sign Language Recognition
+# Gujarati Sign Language Recognition
 
 This project is an AI-powered web application that recognizes **Gujarati Sign Language (Vyanjan)** gestures from camera-captured images and converts them into text. Built with **Flask**, **CNN-based model**, and optionally **MediaPipe**, the app helps improve communication for the deaf and hard-of-hearing community.
 
@@ -37,5 +37,4 @@ Each class has hand sign images for training. Test images are unlabeled.
 - **Frontend**: HTML5, CSS3, JavaScript
 - **Backend**: Python, Flask
 - **ML/DL**: TensorFlow / Keras, OpenCV
-- **(Optional)**: MediaPipe for hand landmarks
 
