@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gujarati Sign Language Recognition</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h1>Gujarati Sign Language Recognition</h1>
+    <p>Gujarati Sign Language (GSL) is a visual language used by the deaf community in Gujarat, India.</p>
+
+    <br>
+    <h2>Upload a Sign Image</h2>
+
+    <!-- File Upload -->
+    <form action="/predict" method="POST" enctype="multipart/form-data">
+        <label for="file">Choose a file:</label>
+        <input type="file" name="file" id="fileInput" accept="image/*">
+        <br><br>
+        
+        <!-- Image Preview -->
+        <img id="imagePreview" src="#" alt="Preview" style="display: none; width: 300px; height: auto;">
+
+        <!-- Upload Button -->
+        <button type="submit" id="uploadBtn" disabled>Upload and Predict</button>
+    </form>
+
+    <!-- Navigate to Camera Page -->
+     <br>
+    <h2>Or use your device's camera:</h2>
+    <a href="/camera">
+        <button>Open Camera</button>
+    </a>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let img = document.getElementById('imagePreview');
+                    img.src = e.target.result;
+                    img.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+                document.getElementById('uploadBtn').disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

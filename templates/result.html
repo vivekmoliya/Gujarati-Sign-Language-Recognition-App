@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Result</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h1>Prediction Result</h1>
+
+    <!-- Display Uploaded Image -->
+    {% if image_path %}
+        <h2>Uploaded Image:</h2>
+        <img src="{{ image_path }}" alt="Uploaded Image" style="width: 500px; height: 500px;">
+    {% endif %}
+
+    <!-- Display Captured Image -->
+    {% if captured_image %}
+        <h2>Captured Image:</h2>
+        <img src="data:image/png;base64,{{ captured_image }}" alt="Captured Image" style="max-width: 100%; height: auto;">
+    {% endif %}
+
+    <!-- Display Prediction -->
+    <h3><strong>Predicted Sign :</strong>  {{ prediction }}</h3>
+    <a href="/">Go Back</a>
+</body>
+</html>
