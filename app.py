@@ -48,7 +48,12 @@ def preprocess_image(image_path):
     img = img.flatten() / 255.0  # Flatten and normalize
     return np.array([img])
 
-
+def load_model():
+    try:
+        return joblib.load(MODEL_PATH)
+    except Exception as e:
+        print("Error loading model:", e)
+        return None
 
 @app.route('/')
 def index():
@@ -61,7 +66,7 @@ def camera():
 @app.route('/predict', methods=['POST'])
 def predict():
     # Lazy load the model inside the route
-    model = joblib.load(MODEL_PATH)
+    model = load_model()
     
     if model is None:
         return "Model not found. Cannot predict.", 500
