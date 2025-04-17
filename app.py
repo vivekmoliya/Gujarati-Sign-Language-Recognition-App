@@ -25,7 +25,7 @@ if not os.path.exists(MODEL_PATH):
     gdown.download(url, MODEL_PATH, quiet=False)
     print("Model downloaded!")
 
-model = joblib.load(MODEL_PATH)
+# model = joblib.load(MODEL_PATH)
 # model = joblib.load('svm_model (4).pkl')
 # Now load the model
 
@@ -60,6 +60,9 @@ def camera():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    # Lazy load the model inside the route
+    model = joblib.load(MODEL_PATH)
+    
     if model is None:
         return "Model not found. Cannot predict.", 500
 
