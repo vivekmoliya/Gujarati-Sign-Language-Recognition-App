@@ -1,28 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prediction Result</title>
-    <link rel="stylesheet" href="/static/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gujarati Sign Language Recognition - Result</title>
+  <link rel="stylesheet" href="/static/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
 </head>
 <body>
+  <div class="container">
     <h1>Prediction Result</h1>
 
-    <!-- Display Uploaded Image -->
-    {% if image_path %}
-        <h2>Uploaded Image:</h2>
-        <img src="{{ image_path }}" alt="Uploaded Image" style="width: 500px; height: 500px;">
-    {% endif %}
+    <section style="grid-column: span 2; text-align: center;">
+      <h2>Predicted Letter: {{ prediction }}</h2>
+      
+      <div class="result-image">
+        {% if captured_image %}
+        <img src="data:image/jpeg;base64,{{ captured_image }}" alt="Captured Image" />
+        {% else %}
+        <img src="{{ image_path }}" alt="Captured Image" />
+        {% endif %}
+      </div>
 
-    <!-- Display Captured Image -->
-    {% if captured_image %}
-        <h2>Captured Image:</h2>
-        <img src="data:image/png;base64,{{ captured_image }}" alt="Captured Image" style="max-width: 100%; height: auto;">
-    {% endif %}
+      <br>
+      <!-- Audio Player for the predicted letter -->
+      <h3>Listen to the predicted letter:</h3><br>
+      <audio controls>
+        <source src="{{ url_for('static', filename='audio/' + audio_file) }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>            
+    </section>
 
-    <!-- Display Prediction -->
-    <h3><strong>Predicted Sign :</strong>  {{ prediction }}</h3>
-    <a href="/">Go Back</a>
+    <div style="grid-column: span 2; text-align: center;" class="center-link">
+        <a href="/">Go back</a>
+      </div>
+  </div>
 </body>
 </html>
