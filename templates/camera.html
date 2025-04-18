@@ -1,63 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capture Sign Using Camera</title>
-    <link rel="stylesheet" href="/static/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Capture Sign Using Camera</title>
+  <link rel="stylesheet" href="/static/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
 </head>
 <body>
-    <h1>Capture Sign Using Camera</h1>
-
-    <!-- Camera Feed -->
-    <video id="video" width="400" height="300" autoplay></video>
-    <br><button id="capture">Capture Photo</button>
-    <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
-    
-    <!-- Image Preview -->
-    <img id="capturedImage" src="#" alt="Captured Image" style="display:none; width: 300px; height: auto;">
-    <br><br>
-
-    <!-- Form for Submitting Captured Image -->
-    <form action="/predict" method="POST" enctype="multipart/form-data" id="uploadForm">
-        <input type="hidden" name="image_data" id="image_data">
-        <button type="submit" id="predictBtn" disabled>Upload and Predict</button>
-    </form>
-
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const captureButton = document.getElementById('capture');
-        const imageDataInput = document.getElementById('image_data');
-        const predictBtn = document.getElementById('predictBtn');
-        const capturedImage = document.getElementById('capturedImage');
-
-        // Access the user's camera
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-                console.error('Error accessing camera:', err);
-                alert('Unable to access camera. Please use a device with a camera.');
-            });
-
-        // Capture the image when the button is clicked
-        captureButton.addEventListener('click', () => {
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imageData = canvas.toDataURL('image/png');
+    <div class="container">
+        <h1>Capture Sign Using Camera</h1>
+      
+        <!-- Camera and Preview Section -->
+        <section style="grid-column: span 2; display: flex; flex-wrap: wrap; gap: 30px; justify-content: center;">
+          <!-- Live Camera -->
+          <div>
+            <video id="video" width="400" height="300" autoplay style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);"></video>
+            <div style="text-align: center;">
+              <button id="capture">Capture Photo</button>
+            </div>
+          </div>
+      
+          <!-- Captured Image Preview -->
+          <div>
+            <canvas id="canvas" width="400" height="300" style="display: none;"></canvas>
+            <img id="capturedImage" src="#" alt="Captured Image"
+                 style="display: none; max-width: 100%; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);" />
+          </div>
+        </section>
+      
+        <!-- Upload Button -->
+        <form action="/predict" method="POST" enctype="multipart/form-data" id="uploadForm" style="grid-column: span 2; text-align: center;">
+          <input type="hidden" name="image_data" id="image_data" />
+          <button type="submit" id="predictBtn" disabled>Upload and Predict</button>
+        </form>
+      
+        <!-- Status Message -->
+        <div id="statusMsg" style="grid-column: span 2;">Predicting, please wait...</div>
+      </div>
             
-            // Display the captured image preview
-            capturedImage.src = imageData;
-            capturedImage.style.display = "block";
+  <!-- JS Functionality -->
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('capture');
+    const imageDataInput = document.getElementById('image_data');
+    const predictBtn = document.getElementById('predictBtn');
+    const capturedImage = document.getElementById('capturedImage');
+    const statusMsg = document.getElementById("statusMsg");
 
-            // Save the base64 image in the hidden input
-            imageDataInput.value = imageData;
-            
-            // Enable the predict button
-            predictBtn.disabled = false;
-        });
-    </script>
+    // Access user's camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error('Camera error:', err);
+        alert('Unable to access camera. Please use a device with a camera.');
+      });
+
+    // Capture Image
+    captureBtn.addEventListener('click', () => {
+      const context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL('image/png');
+
+      capturedImage.src = imageData;
+      capturedImage.style.display = "block";
+      imageDataInput.value = imageData;
+      predictBtn.disabled = false;
+    });
+
+    // Show status message on submit
+    document.getElementById('uploadForm').addEventListener('submit', () => {
+      statusMsg.style.display = "block";
+    });
+  </script>
 </body>
 </html>
