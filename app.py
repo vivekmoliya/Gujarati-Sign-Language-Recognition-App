@@ -6,14 +6,15 @@ import os
 from PIL import Image
 import base64
 from io import BytesIO
-import urllib.request
 import gdown
+from gtts import gTTS
 
 # Initialize Flask app
 app = Flask(__name__)
 
 # Upload folder
 UPLOAD_FOLDER = './static/uploads'
+AUDIO_FOLDER = './static/audio'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Model path
@@ -29,9 +30,9 @@ if not os.path.exists(MODEL_PATH):
 # Load the model once globally
 try:
     model = joblib.load(MODEL_PATH)
-    print("Model loaded successfully!")
+    print("✅ Model loaded successfully!")
 except Exception as e:
-    print("Error loading model:", e)
+    print("❌ Error loading model:", e)
     model = None
 
 # Gujarati classes
@@ -64,30 +65,49 @@ def predict():
         if model is None:
             return "Model not loaded. Cannot predict.", 500
 
-        image_data = request.form.get('image_data')
-        if image_data:
-            image_data = image_data.split(',')[1]
+        predicted_label = None
+        image_base64 = None
+
+        if request.form.get('image_data'):
+            # Handle base64 image data from camera
+            image_data = request.form['image_data'].split(',')[1]
             image_bytes = base64.b64decode(image_data)
             image = Image.open(BytesIO(image_bytes)).convert('L').resize((200, 200))
             input_data = np.array(image).flatten() / 255.0
             input_data = np.array([input_data])
-
             prediction = model.predict(input_data)
             predicted_label = classes.get(prediction[0], "Unknown")
             image_base64 = base64.b64encode(image_bytes).decode('utf-8')
 
-            return render_template('result.html', prediction=predicted_label, captured_image=image_base64)
-
-        if 'file' in request.files:
+        elif 'file' in request.files:
+            # Handle file upload
             file = request.files['file']
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
-
             input_data = preprocess_image(filepath)
             prediction = model.predict(input_data)
             predicted_label = classes.get(prediction[0], "Unknown")
+            # Optional: Convert image to base64 if you want to show uploaded image too
+            with open(filepath, "rb") as f:
+                image_base64 = base64.b64encode(f.read()).decode('utf-8')
 
-            return render_template('result.html', prediction=predicted_label, image_path=filepath)
+        if predicted_label:
+            # Ensure audio directory exists
+            if not os.path.exists(AUDIO_FOLDER):
+                os.makedirs(AUDIO_FOLDER)
+
+            # Generate audio using gTTS
+            audio_filename = f"{predicted_label}.mp3"
+            audio_path = os.path.join(AUDIO_FOLDER, audio_filename)
+
+            if not os.path.exists(audio_path):  # Avoid regenerating
+                tts = gTTS(text=predicted_label, lang='gu')
+                tts.save(audio_path)
+
+            return render_template('result.html',
+                                   prediction=predicted_label,
+                                   captured_image=image_base64,
+                                   audio_file=audio_filename)
 
         return redirect(request.url)
 
@@ -96,6 +116,5 @@ def predict():
         return f"Internal Server Error: {e}", 500
 
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host='0.0.0.0', port=port)
