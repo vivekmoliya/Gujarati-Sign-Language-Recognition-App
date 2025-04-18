@@ -104,13 +104,24 @@ button:hover {
     margin-bottom: 2rem;
 }
 
-.result-image {
-    max-width: 100%;
+.result-image img {
+    width: 100%;
+    max-width: 400px;
     height: auto;
-    border: 2px solid #ddd;
     border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
 }
 
+@media (max-width: 768px) {
+    .result-image img {
+        max-width: 100%;
+    }
+
+    .container {
+        padding: 20px;
+    }
+}
 .prediction h3 {
     font-size: 1.5rem;
     color: #222;
