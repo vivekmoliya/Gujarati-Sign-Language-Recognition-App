@@ -1,47 +1,147 @@
-/* Apply a light background color to the whole page */
-body {
-    background-color: #f4f4f9; /* Light grayish background */
-    color: #333; /* Dark text for contrast */
-    text-align: center; /* Center all text */
-    font-family: Arial, sans-serif; /* Set a clean font */
+/* Importing Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+* {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-/* Style the headings */
-h1, h2 {
-    color: #2e8b57; /* Highlighted green color for headings */
-    margin-bottom: 20px; /* Add spacing below headings */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #e0f7fa, #e8f5e9);
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    min-height: 100vh;
+    text-align: center;
 }
 
-/* Center the image */
-img {
-    display: block;
-    margin: 0 auto;
-    max-width: 100%; /* Ensure it is responsive */
-    height: auto;
+/* Container Layout */
+.container {
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    width: 100%;
+    padding: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
 }
 
-/* Style paragraphs */
-p {
-    line-height: 1.6; /* Improve readability */
-    margin: 0 0 20px 0; /* Add spacing below paragraphs */
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
 }
 
-/* Style buttons */
+h1 {
+    grid-column: span 2;
+    font-size: 2rem;
+    color: #0077cc;
+    margin-bottom: 30px;
+}
+
+/* Upload Box */
+.upload-box {
+    background: #f4f4f9;
+    border: 2px dashed #ccc;
+    padding: 20px;
+    width: 100%;
+    text-align: center;
+    border-radius: 10px;
+    transition: background 0.3s;
+}
+
+.upload-box:hover {
+    background: #e6f7f1;
+}
+
+input[type="file"] {
+    margin-top: 15px;
+}
+
+#imagePreview {
+    margin-top: 20px;
+    max-width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: none;
+}
+
+/* Buttons */
 button {
-    background-color: #28a745; /* Green button */
-    color: white; /* Text color for the button */
+    background-color: #28a745;
+    color: white;
     border: none;
-    padding: 10px 20px; /* Adjust padding */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Change cursor to a pointer */
-    font-size: 16px; /* Larger text for readability */
-    margin: 10px; /* Add margin around buttons */
-    transition: background-color 0.3s ease; /* Smooth transition for hover */
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: all 0.3s ease-in-out;
 }
 
-/* Change button color when hovered */
 button:hover {
-    background-color: #218838; /* Darker green when hovered */
+    background-color: #1e7e34;
+    transform: scale(1.05);
 }
+
+/* Status Message */
+#statusMsg {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #007bff;
+    font-size: 16px;
+    display: none;
+}
+
+/* ===== Result Page Styling ===== */
+.result-block {
+    margin-bottom: 2rem;
+}
+
+.result-image {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+}
+
+.prediction h3 {
+    font-size: 1.5rem;
+    color: #222;
+    margin:7rem 0;
+}
+
+.back-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #0077cc;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.3s;
+}
+
+.back-btn:hover {
+    background-color: #005fa3;
+}
+
+.speak-btn {
+    background-color: #0077cc;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+  }
+  .speak-btn:hover {
+    background-color: #005fa3;
+  }
+  
