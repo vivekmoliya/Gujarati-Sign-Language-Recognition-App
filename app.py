@@ -8,26 +8,23 @@ import base64
 from io import BytesIO
 import gdown
 from gtts import gTTS
+import mediapipe as mp
 
-# Initialize Flask app
+# Flask setup
 app = Flask(__name__)
-
-# Upload folder
 UPLOAD_FOLDER = './static/uploads'
 AUDIO_FOLDER = './static/audio'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Model path
+# Model download if missing
 MODEL_PATH = "svm_model.pkl"
-
-# Download model if not already present
 if not os.path.exists(MODEL_PATH):
     print("Downloading model...")
     url = "https://drive.google.com/uc?export=download&id=1CPEZxfe9DwlPwTXiQerTOqtG17LfNiXz"
     gdown.download(url, MODEL_PATH, quiet=False)
     print("Model downloaded!")
 
-# Load the model once globally
+# Load model
 try:
     model = joblib.load(MODEL_PATH)
     print("✅ Model loaded successfully!")
@@ -35,7 +32,7 @@ except Exception as e:
     print("❌ Error loading model:", e)
     model = None
 
-# Gujarati classes
+# Gujarati character mapping
 classes = {
     0: 'ક', 1: 'ખ', 2: 'ગ', 3: 'ઘ', 4: 'ચ', 5: 'છ',
     6: 'જ', 7: 'ઝ', 8: 'ટ', 9: 'ઠ', 10: 'ડ', 11: 'ઢ',
@@ -45,11 +42,35 @@ classes = {
     30: 'હ', 31: 'ળ', 32: 'ક્ષ', 33: 'જ્ઞ'
 }
 
+# ========= HAND-ONLY VALIDATION ==========
+
+mp_hands = mp.solutions.hands
+mp_face = mp.solutions.face_detection
+
+def verify_hand_only(image_np):
+    image_rgb = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
+
+    # Lowered confidence threshold to 0.4
+    with mp_hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_confidence=0.4) as hands:
+        hand_results = hands.process(image_rgb)
+
+    with mp_face.FaceDetection(model_selection=0, min_detection_confidence=0.4) as faces:
+        face_results = faces.process(image_rgb)
+
+    hand_detected = hand_results.multi_hand_landmarks is not None
+    face_detected = face_results.detections is not None
+
+    return hand_detected and not face_detected
+
+# ========= PREPROCESS ==========
+
 def preprocess_image(image_path):
-    img = cv2.imread(image_path, 0)  # Grayscale
+    img = cv2.imread(image_path, 0)
     img = cv2.resize(img, (200, 200))
     img = img.flatten() / 255.0
     return np.array([img])
+
+# ========= ROUTES ==========
 
 @app.route('/')
 def index():
@@ -68,39 +89,52 @@ def predict():
         predicted_label = None
         image_base64 = None
 
+        # ---- Camera Capture ----
         if request.form.get('image_data'):
-            # Handle base64 image data from camera
             image_data = request.form['image_data'].split(',')[1]
             image_bytes = base64.b64decode(image_data)
-            image = Image.open(BytesIO(image_bytes)).convert('L').resize((200, 200))
-            input_data = np.array(image).flatten() / 255.0
-            input_data = np.array([input_data])
-            prediction = model.predict(input_data)
+            image = Image.open(BytesIO(image_bytes)).convert('RGB')
+            image_np = np.array(image)
+
+            # Validate hand only
+            if not verify_hand_only(image_np):
+                return render_template("error.html", message="Only clear hand signs allowed. No random images or faces.")
+
+            # Resize & predict
+            image_gray = image.convert('L').resize((200, 200))
+            input_data = np.array(image_gray).flatten() / 255.0
+            prediction = model.predict([input_data])
             predicted_label = classes.get(prediction[0], "Unknown")
             image_base64 = base64.b64encode(image_bytes).decode('utf-8')
 
+        # ---- File Upload ----
         elif 'file' in request.files:
-            # Handle file upload
             file = request.files['file']
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
+
+            image_np = cv2.imread(filepath)
+
+            # Validate hand only
+            if not verify_hand_only(image_np):
+                os.remove(filepath)
+                return render_template("error.html", message="Only upload a clear hand sign image. No random objects, text, or face.")
+
             input_data = preprocess_image(filepath)
             prediction = model.predict(input_data)
             predicted_label = classes.get(prediction[0], "Unknown")
-            # Optional: Convert image to base64 if you want to show uploaded image too
+
             with open(filepath, "rb") as f:
                 image_base64 = base64.b64encode(f.read()).decode('utf-8')
 
         if predicted_label:
-            # Ensure audio directory exists
             if not os.path.exists(AUDIO_FOLDER):
                 os.makedirs(AUDIO_FOLDER)
 
-            # Generate audio using gTTS
             audio_filename = f"{predicted_label}.mp3"
             audio_path = os.path.join(AUDIO_FOLDER, audio_filename)
 
-            if not os.path.exists(audio_path):  # Avoid regenerating
+            if not os.path.exists(audio_path):
                 tts = gTTS(text=predicted_label, lang='gu')
                 tts.save(audio_path)
 
@@ -114,6 +148,8 @@ def predict():
     except Exception as e:
         print("Error during prediction:", e)
         return f"Internal Server Error: {e}", 500
+
+# ========= MAIN ==========
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
