@@ -2,7 +2,6 @@
 
 This project is an AI-powered web application that recognizes **Gujarati Sign Language (Vyanjan)** gestures from camera-captured images and converts them into text. Built with **Flask**, **CNN-based model**, and optionally **MediaPipe**, the app helps improve communication for the deaf and hard-of-hearing community.
 
----
 
 ## 🚀 Features
 
@@ -12,7 +11,6 @@ This project is an AI-powered web application that recognizes **Gujarati Sign La
 - 🌐 User-friendly Flask web interface
 - ✅ Real-time prediction and result display
 
----
 
 ## 🧪 Dataset Structure
 
@@ -21,7 +19,6 @@ dataset/ │ ├── train/ │ ├── ક/ (12 images) │ ├── ખ/ 
 
 Each class has hand sign images for training. Test images are unlabeled.
 
----
 
 ## 🧠 Model Training
 
@@ -30,7 +27,6 @@ Each class has hand sign images for training. Test images are unlabeled.
 - Model trained using a CNN with high accuracy (~90% without MediaPipe)
 - MediaPipe was also tested for hand segmentation, but resulted in lower accuracy (~70%) due to input mismatch.
 
----
 
 ## 🛠️ Tech Stack
 
